@@ -151,14 +151,15 @@ export async function fetchCajaDiaria(fecha?: string) {
   if (error) throw error
 
   // Agrupar por método de pago
-  const resumen = data?.reduce((acc, pago) => {
-    if (!acc[pago.metodo]) acc[pago.metodo] = { total: 0, count: 0 }
-    acc[pago.metodo].total += pago.monto
-    acc[pago.metodo].count += 1
+  const resumen = (data ?? []).reduce((acc, pago: any) => {
+    const metodo = pago.metodo as string
+    if (!acc[metodo]) acc[metodo] = { total: 0, count: 0 }
+    acc[metodo].total += Number(pago.monto)
+    acc[metodo].count += 1
     return acc
   }, {} as Record<string, { total: number; count: number }>)
 
-  const totalDia = data?.reduce((sum, p) => sum + p.monto, 0) ?? 0
+  const totalDia = (data ?? []).reduce((sum: number, p: any) => sum + Number(p.monto), 0)
 
   return { pagos: data, resumen, totalDia }
 }
