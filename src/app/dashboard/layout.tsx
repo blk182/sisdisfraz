@@ -380,7 +380,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className="main">
           <div className="topbar">
             <span style={{ fontFamily: 'Cinzel, serif', fontSize: 11, letterSpacing: 2, color: 'rgba(201,168,76,0.4)', textTransform: 'uppercase' }}>
-              {navItems.find(i => i.pathname === pathname)?.label ?? 'Dashboard'}
+              {navItems.find(i => i.href === pathname)?.label ?? 'Dashboard'}
             </span>
             <span className="rol-badge">
               {ROL_LABELS[rol]}
