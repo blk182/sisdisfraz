@@ -26,10 +26,10 @@ const DANZAS = [
 ]
 
 export default function CatalogoAdminPage() {
-  const [disfraces, setDisfraces] = useState<Disfaz[]>([])
+  const [disfraces, setDisfraces] = useState<Disfraz[]>([])
   const [loading, setLoading] = useState(true)
   const [mostrarModal, setMostrarModal] = useState(false)
-  const [editando, setEditando] = useState<Disfaz | null>(null)
+  const [editando, setEditando] = useState<Disfraz | null>(null)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
   
