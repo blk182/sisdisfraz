@@ -196,8 +196,8 @@ export default function UsuariosPage() {
                   <td>
                     <span style={{ 
                       padding: '4px 10px', 
-                      borderRadius: 2px, 
-                      fontSize: 11,
+                      borderRadius: '2px', 
+                      fontSize: '11',
                       background: u.activo ? 'rgba(39,174,96,0.15)' : 'rgba(192,57,43,0.15)',
                       color: u.activo ? '#27AE60' : '#E74C3C'
                     }}>
