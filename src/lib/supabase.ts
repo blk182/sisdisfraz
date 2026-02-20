@@ -142,16 +142,16 @@ export async function fetchDanzasRentables(desde?: string, hasta?: string) {
 
   const rows = (data ?? []) as any[]
 
-  const porDanza = rows.reduce((acc: Record<string, { total: number; count: number }>, a: any) => {
+  const porDanza: Record<string, { total: number; count: number }> = rows.reduce((acc, a: any) => {
     const danza: string = a.disfraz?.danza ?? 'Desconocida'
     if (!acc[danza]) acc[danza] = { total: 0, count: 0 }
     acc[danza].total += Number(a.total_cobrado)
     acc[danza].count += 1
     return acc
-  }, {})
+  }, {} as Record<string, { total: number; count: number }>)
 
   return Object.entries(porDanza)
-    .map(([danza, stats]) => ({ danza, ...stats }))
+    .map(([danza, stats]: [string, { total: number; count: number }]) => ({ danza, ...stats }))
     .sort((a, b) => b.total - a.total)
 }
 
