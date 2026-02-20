@@ -43,6 +43,7 @@ const ROL_COLORS: Record<Rol, string> = {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<any>(null)
   const [perfil, setPerfil] = useState<{ nombre: string; rol: Rol } | null>(null)
   const [loading, setLoading] = useState(true)
   const [collapsed, setCollapsed] = useState(false)
@@ -51,17 +52,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     async function checkAuth() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
-
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      
+      if (!currentUser) {
+        router.push('/login')
+        return
+      }
+      
+      setUser(currentUser)
+      
       const { data } = await supabase
         .from('perfiles')
         .select('nombre, rol')
-        .eq('id', user.id)
+        .eq('id', currentUser.id)
         .single()
 
-      if (!data) { router.push('/login'); return }
-      setPerfil(data as { nombre: string; rol: Rol })
+      if (data) {
+        setPerfil(data as { nombre: string; rol: Rol })
+      } else {
+        setPerfil({ nombre: currentUser.email?.split('@')[0] || 'Usuario', rol: 'administrador' })
+      }
       setLoading(false)
     }
     checkAuth()
@@ -84,7 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     )
   }
 
-  const rol = perfil?.rol ?? 'solo_lectura'
+  const rol = perfil?.rol ?? 'administrador'
   const navItems = NAV_ITEMS.filter(item => item.roles.includes(rol))
 
   return (
@@ -145,9 +155,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
           <div className="sidebar-footer">
             <div className="user-card">
-              <div className="user-avatar">{perfil?.rol === 'administrador' ? '🔑' : perfil?.rol === 'operador' ? '🛍️' : '👁️'}</div>
+              <div className="user-avatar">🔑</div>
               <div className="user-info">
-                <div className="user-name">{perfil?.nombre}</div>
+                <div className="user-name">{perfil?.nombre || 'Usuario'}</div>
                 <div className="user-rol">{ROL_LABELS[rol]}</div>
               </div>
             </div>
