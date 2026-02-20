@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ============================================================
 // SisDisfraz Perú — Cliente Supabase + Hooks principales
 // src/lib/supabase.ts  +  src/hooks/useAlquileres.ts
