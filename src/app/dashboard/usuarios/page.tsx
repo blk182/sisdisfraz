@@ -7,15 +7,11 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-interface Usuario {
+interface Perfil {
   id: string
-  email: string
-  created_at: string
-  perfiles: {
-    nombre: string
-    rol: string
-    activo: boolean
-  } | null
+  nombre: string
+  rol: string
+  activo: boolean
 }
 
 const ROLES = [
@@ -25,7 +21,7 @@ const ROLES = [
 ]
 
 export default function UsuariosPage() {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([])
+  const [usuarios, setUsuarios] = useState<Perfil[]>([])
   const [loading, setLoading] = useState(true)
   const [mostrarModal, setMostrarModal] = useState(false)
   const [emailNuevo, setEmailNuevo] = useState('')
@@ -41,12 +37,12 @@ export default function UsuariosPage() {
 
   async function cargarUsuarios() {
     const { data, error } = await supabase
-      .from('usuarios')
-      .select('id, email, created_at, perfiles(nombre, rol, activo)')
-      .order('created_at', { ascending: false })
+      .from('perfiles')
+      .select('*')
+      .order('nombre', { ascending: true })
 
     if (!error && data) {
-      setUsuarios(data as Usuario[])
+      setUsuarios(data as Perfil[])
     }
     setLoading(false)
   }
@@ -111,6 +107,11 @@ export default function UsuariosPage() {
     }
   }
 
+  const getCurrentUserId = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    return user?.id
+  }
+
   return (
     <>
       <style>{`
@@ -127,10 +128,7 @@ export default function UsuariosPage() {
         .table td { padding: 14px 16px; font-family: 'Crimson Text', serif; font-size: 14px; color: #E8E0D0; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .table tr:last-child td { border-bottom: none; }
         .table tr:hover td { background: rgba(201,168,76,0.02); }
-        .rol-badge { display: inline-flex; padding: 4px 10px; border-radius: 2px; font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 1px; text-transform: uppercase; }
-        .rol-admin { background: rgba(201,168,76,0.15); color: #C9A84C; }
-        .rol-operador { background: rgba(41,128,185,0.15); color: #2980B9; }
-        .rol-lectura { background: rgba(39,174,96,0.15); color: #27AE60; }
+        .rol-select { padding: 6px 10px; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.2); border-radius: 2px; color: #E8E0D0; font-family: 'Crimson Text', serif; font-size: 13px; cursor: pointer; }
         .btn-sm { padding: 6px 12px; font-size: 10px; }
         .btn-outline { background: transparent; border: 1px solid rgba(201,168,76,0.2); color: #E8E0D0; }
         .btn-outline:hover { background: rgba(201,168,76,0.1); }
@@ -151,7 +149,7 @@ export default function UsuariosPage() {
         @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
         @media (max-width: 768px) {
           .table-wrap { overflow-x: auto; }
-          .table { min-width: 600px; }
+          .table { min-width: 500px; }
           .page-header { flex-direction: column; }
           .btn { width: 100%; }
         }
@@ -175,7 +173,6 @@ export default function UsuariosPage() {
             <thead>
               <tr>
                 <th>Usuario</th>
-                <th>Email</th>
                 <th>Rol</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -184,13 +181,12 @@ export default function UsuariosPage() {
             <tbody>
               {usuarios.map(u => (
                 <tr key={u.id}>
-                  <td style={{ fontWeight: 600 }}>{u.perfiles?.nombre || '—'}</td>
-                  <td style={{ color: 'rgba(232,224,208,0.6)' }}>{u.email}</td>
+                  <td style={{ fontWeight: 600 }}>{u.nombre}</td>
                   <td>
                     <select
-                      value={u.perfiles?.rol || 'solo_lectura'}
+                      value={u.rol}
                       onChange={e => cambiarRol(u.id, e.target.value)}
-                      style={{ background: 'transparent', border: 'none', color: 'inherit', font: 'inherit', cursor: 'pointer' }}
+                      className="rol-select"
                     >
                       {ROLES.map(r => (
                         <option key={r.value} value={r.value}>{r.label}</option>
@@ -198,21 +194,27 @@ export default function UsuariosPage() {
                     </select>
                   </td>
                   <td>
-                    <span className={`rol-badge ${u.perfiles?.activo ? 'rol-admin' : 'rol-lectura'}`}>
-                      {u.perfiles?.activo ? 'Activo' : 'Inactivo'}
+                    <span style={{ 
+                      padding: '4px 10px', 
+                      borderRadius: 2px, 
+                      fontSize: 11,
+                      background: u.activo ? 'rgba(39,174,96,0.15)' : 'rgba(192,57,43,0.15)',
+                      color: u.activo ? '#27AE60' : '#E74C3C'
+                    }}>
+                      {u.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
                   <td>
-                    <button className="btn btn-sm btn-outline" onClick={() => toggleActivo(u.id, u.perfiles?.activo || false)}>
-                      {u.perfiles?.activo ? 'Desactivar' : 'Activar'}
+                    <button className="btn btn-sm btn-outline" onClick={() => toggleActivo(u.id, u.activo)}>
+                      {u.activo ? 'Desactivar' : 'Activar'}
                     </button>
                   </td>
                 </tr>
               ))}
               {usuarios.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', color: 'rgba(232,224,208,0.3)', padding: 40 }}>
-                    No hay usuarios registrados
+                  <td colSpan={4} style={{ textAlign: 'center', color: 'rgba(232,224,208,0.3)', padding: 40 }}>
+                    No hay usuarios registrados. Crea el primero.
                   </td>
                 </tr>
               )}
