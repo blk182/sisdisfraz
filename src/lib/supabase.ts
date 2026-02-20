@@ -181,8 +181,8 @@ export async function fetchLavanderiaPendiente() {
 }
 
 export async function marcarLavanderiaListo(lavanderiaId: string, procesadoPor: string) {
-  const { error } = await supabase
-    .from('lavanderia')
+  const { error } = await (supabase
+    .from('lavanderia') as any)
     .update({ estado: 'listo', procesado_por: procesadoPor })
     .eq('id', lavanderiaId)
 
